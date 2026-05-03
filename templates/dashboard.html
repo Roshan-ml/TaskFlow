@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-6xl">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <p class="text-gray-500 mt-1">Welcome back, {{ current_user.name }}! Here's your overview.</p>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500 font-medium">Total Tasks</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ total_tasks }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500 font-medium">Projects</p>
+            <p class="text-3xl font-bold text-indigo-600 mt-1">{{ project_count }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500 font-medium">To Do</p>
+            <p class="text-3xl font-bold text-slate-600 mt-1">{{ todo_count }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500 font-medium">In Progress</p>
+            <p class="text-3xl font-bold text-blue-600 mt-1">{{ in_progress_count }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm {% if overdue_count > 0 %}text-red-500{% else %}text-gray-500{% endif %} font-medium">Overdue</p>
+            <p class="text-3xl font-bold {% if overdue_count > 0 %}text-red-600{% else %}text-gray-900{% endif %} mt-1">{{ overdue_count }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Tasks per User -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Tasks per Team Member</h2>
+            {% if tasks_per_user_list %}
+                <div class="space-y-3">
+                {% for item in tasks_per_user_list %}
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium text-gray-700">{{ item.name }}</span>
+                            <span class="text-gray-500">{{ item.count }} tasks</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2">
+                            <div class="bg-indigo-500 h-2 rounded-full" style="width: {{ [item.count * 20, 100] | min }}%"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-400 text-sm">No assigned tasks yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Overdue Tasks -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">⚠️ Overdue Tasks</h2>
+            {% if overdue_tasks %}
+                <div class="space-y-2">
+                {% for task in overdue_tasks %}
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">{{ task.title }}</p>
+                            <p class="text-xs text-gray-500">{{ task.project.name }} • Due {{ task.due_date.strftime('%b %d') }}</p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full priority-{{ task.priority.value }}">{{ task.priority.value }}</span>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <p class="text-4xl mb-2">✅</p>
+                    <p class="text-gray-400 text-sm">No overdue tasks!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Tasks -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 lg:col-span-2">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Tasks</h2>
+            {% if recent_tasks %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-gray-500 border-b border-gray-100">
+                            <th class="pb-3 font-medium">Task</th>
+                            <th class="pb-3 font-medium">Project</th>
+                            <th class="pb-3 font-medium">Assignee</th>
+                            <th class="pb-3 font-medium">Priority</th>
+                            <th class="pb-3 font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                    {% for task in recent_tasks %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 font-medium text-gray-900">{{ task.title }}</td>
+                            <td class="py-3 text-gray-500">{{ task.project.name }}</td>
+                            <td class="py-3 text-gray-500">{{ task.assignee.name if task.assignee else '—' }}</td>
+                            <td class="py-3"><span class="px-2 py-1 rounded-full text-xs font-medium priority-{{ task.priority.value }}">{{ task.priority.value }}</span></td>
+                            <td class="py-3"><span class="px-2 py-1 rounded-full text-xs font-medium status-{{ task.status.value }}">{{ task.status.value.replace('_', ' ').title() }}</span></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-gray-400 text-sm">No tasks yet. <a href="/projects" class="text-indigo-600 hover:underline">Create a project</a> to get started.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
